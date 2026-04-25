@@ -1,0 +1,14 @@
+from django.urls import path
+
+from . import views
+
+
+urlpatterns = [
+    path("", views.index, name="index"),
+    path("api/users/", views.user_list, name="user-list"),
+    path("api/books/", views.book_list, name="book-list"),
+    path("api/loans/", views.loan_list, name="loan-list"),
+    path("api/borrow/", views.borrow_book, name="borrow-book"),
+    path("api/return/", views.return_book, name="return-book"),
+    path("api/chatbot/", views.chatbot, name="chatbot"),
+]

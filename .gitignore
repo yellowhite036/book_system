@@ -1,0 +1,40 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments and local dependency folders
+.venv/
+venv/
+env/
+.deps/
+vendor/
+wheelhouse/
+
+# Django database and local runtime files
+db.sqlite3
+*.sqlite3
+local_settings.py
+
+# Django collected/static cache files
+staticfiles/
+
+# Test, coverage, and type-checker output
+.coverage
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log

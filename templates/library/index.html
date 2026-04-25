@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <!-- Basic page metadata and stylesheet import. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上圖書館管理系統</title>
+    <link rel="stylesheet" href="/static/library/style.css">
+</head>
+<body>
+    <!-- Main dashboard area for library operations. -->
+    <main class="page-shell">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">Online Library Console</p>
+                <h1>線上圖書館管理系統</h1>
+                <p class="hero-copy">
+                    提供書單查詢、借書、還書、借閱期限與逾期提醒，並內建客服 Chatbot。
+                </p>
+            </div>
+            <div class="hero-panel">
+                <label for="userSelect">選擇使用者</label>
+                <select id="userSelect"></select>
+                <p id="userSummary" class="muted-text">載入使用者資料中...</p>
+            </div>
+        </section>
+
+        <!-- Left side shows books, right side shows loan records. -->
+        <section class="dashboard-grid">
+            <section class="card">
+                <div class="section-head">
+                    <h2>圖書館書單</h2>
+                    <button id="refreshBooksBtn" class="ghost-btn">重新整理</button>
+                </div>
+                <div id="booksContainer" class="book-grid"></div>
+            </section>
+
+            <section class="card">
+                <div class="section-head">
+                    <h2>借閱紀錄</h2>
+                    <button id="refreshLoansBtn" class="ghost-btn">更新狀態</button>
+                </div>
+                <div id="loansContainer" class="loan-list"></div>
+            </section>
+        </section>
+
+        <!-- Simple chatbot panel for FAQ and loan-related questions. -->
+        <section class="card chatbot-card">
+            <div class="section-head">
+                <h2>客服 Chatbot</h2>
+                <span class="tag">RAG-style FAQ</span>
+            </div>
+            <div id="chatMessages" class="chat-messages">
+                <div class="message bot">
+                    你好，我可以回答借書規則、逾期狀態、還書流程，也能結合目前選擇的使用者資料提供借閱提醒。
+                </div>
+            </div>
+            <form id="chatForm" class="chat-form">
+                <input id="chatInput" type="text" placeholder="例如：我的書什麼時候到期？">
+                <button type="submit">送出</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Frontend interaction logic. -->
+    <script src="/static/library/app.js"></script>
+</body>
+</html>
