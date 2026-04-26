@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -10,12 +11,12 @@ from library.models import Book, LibraryUser, Loan
 class Command(BaseCommand):
     help = "Seed sample books, users, and loans for the demo library system."
 
-    # 建立示範使用者、書籍，以及一筆逾期和一筆正常借閱資料。
+    # 建立示範帳號、書籍，以及一筆逾期和一筆正常借閱資料。
     def handle(self, *args, **options):
         users = [
-            {"name": "Alice Chen", "email": "alice@example.com"},
-            {"name": "Brian Lin", "email": "brian@example.com"},
-            {"name": "Cindy Wu", "email": "cindy@example.com"},
+            {"username": "alice", "password": "library123", "name": "Alice Chen", "email": "alice@example.com"},
+            {"username": "brian", "password": "library123", "name": "Brian Lin", "email": "brian@example.com"},
+            {"username": "cindy", "password": "library123", "name": "Cindy Wu", "email": "cindy@example.com"},
         ]
         books = [
             {
@@ -47,11 +48,27 @@ class Command(BaseCommand):
             },
         ]
 
-        # 若資料已存在就更新，否則建立新的示範使用者與書籍。
-        created_users = [LibraryUser.objects.update_or_create(email=row["email"], defaults=row)[0] for row in users]
+        created_users = []
+        for row in users:
+            auth_user, _ = User.objects.get_or_create(
+                username=row["username"],
+                defaults={"email": row["email"]},
+            )
+            auth_user.email = row["email"]
+            auth_user.set_password(row["password"])
+            auth_user.save()
+
+            library_user, _ = LibraryUser.objects.update_or_create(
+                email=row["email"],
+                defaults={
+                    "auth_user": auth_user,
+                    "name": row["name"],
+                },
+            )
+            created_users.append(library_user)
+
         created_books = [Book.objects.update_or_create(isbn=row["isbn"], defaults=row)[0] for row in books]
 
-        # 建立一筆逾期中的借閱資料，方便展示逾期功能。
         overdue_loan, created = Loan.objects.get_or_create(
             user=created_users[0],
             book=created_books[0],
@@ -65,7 +82,6 @@ class Command(BaseCommand):
             overdue_loan.book.available_copies = max(0, overdue_loan.book.available_copies - 1)
             overdue_loan.book.save(update_fields=["available_copies"])
 
-        # 建立一筆尚未到期的借閱資料，方便展示一般借閱狀態。
         active_loan, created = Loan.objects.get_or_create(
             user=created_users[1],
             book=created_books[1],
@@ -79,4 +95,4 @@ class Command(BaseCommand):
             active_loan.book.available_copies = max(0, active_loan.book.available_copies - 1)
             active_loan.book.save(update_fields=["available_copies"])
 
-        self.stdout.write(self.style.SUCCESS("Sample library data created."))
+        self.stdout.write(self.style.SUCCESS("Sample library data with login accounts created."))

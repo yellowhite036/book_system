@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
@@ -10,7 +11,12 @@ from .models import Book, LibraryUser, Loan
 class LoanModelTests(TestCase):
     # 建立一筆昨天到期的借閱資料，確認系統會判定為逾期。
     def test_overdue_detection(self):
-        user = LibraryUser.objects.create(name="Tester", email="tester@example.com")
+        auth_user = User.objects.create_user(username="tester", password="library123")
+        user = LibraryUser.objects.create(
+            auth_user=auth_user,
+            name="Tester",
+            email="tester@example.com",
+        )
         book = Book.objects.create(
             title="Test Book",
             author="Author",

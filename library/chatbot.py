@@ -24,8 +24,8 @@ KNOWLEDGE_BASE = [
     },
     {
         "title": "系統功能",
-        "content": "這個系統可以查看書單、切換使用者、借書、還書、查看借閱期限，並提供簡易客服 chatbot 問答。",
-        "keywords": ["功能", "系統", "chatbot", "客服", "rag", "llm"],
+        "content": "這個系統可以查看書單、登入個人帳號、借書、還書、查看借閱期限，並提供簡易客服 chatbot 問答。",
+        "keywords": ["功能", "系統", "chatbot", "客服", "rag", "llm", "登入"],
     },
 ]
 
@@ -71,7 +71,8 @@ def build_chatbot_reply(message, user=None):
         responses.append("我先根據目前系統資料回答你。")
 
     loan_keywords = ["我的", "借閱", "借書", "還書", "到期", "逾期", "my", "loan", "due", "overdue", "return"]
-    if user and any(keyword in message.lower() or keyword in message for keyword in loan_keywords):
+    lowered_message = message.lower()
+    if user and any(keyword in message or keyword in lowered_message for keyword in loan_keywords):
         active_loans = Loan.objects.select_related("book").filter(user=user, returned_at__isnull=True)
         if active_loans.exists():
             today = timezone.localdate()
@@ -82,7 +83,7 @@ def build_chatbot_reply(message, user=None):
         else:
             responses.append(f"{user.name} 目前沒有尚未歸還的書籍。")
 
-    if any(keyword in message.lower() for keyword in ["rag", "llm", "chatbot"]):
+    if any(keyword in lowered_message for keyword in ["rag", "llm", "chatbot"]):
         responses.append("目前這是簡化版的 RAG 風格客服，先用知識庫檢索加上借閱資料回覆。若需要，也可以再接真正的 LLM API。")
 
     return "\n".join(responses)

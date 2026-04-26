@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入圖書館系統</title>
+    <link rel="stylesheet" href="/static/library/style.css?v=20260426b">
+</head>
+<body>
+    <main class="page-shell login-shell">
+        <section class="card login-card">
+            <p class="eyebrow">Library Login</p>
+            <h1>登入圖書館管理系統</h1>
+            <p class="hero-copy">請使用個人帳號登入後操作借書、還書與借閱查詢功能。</p>
+
+            {% if error_message %}
+            <div class="message bot">{{ error_message }}</div>
+            {% endif %}
+
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <label for="username">帳號</label>
+                <input id="username" name="username" type="text" placeholder="請輸入帳號" required>
+
+                <label for="password">密碼</label>
+                <input id="password" name="password" type="password" placeholder="請輸入密碼" required>
+
+                <button type="submit">登入</button>
+            </form>
+
+            <div class="login-hint">
+                <p>示範帳號：</p>
+                <p>alice / library123</p>
+                <p>brian / library123</p>
+                <p>cindy / library123</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

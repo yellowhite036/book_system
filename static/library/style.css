@@ -67,6 +67,12 @@ h1, h2 {
     color: var(--muted);
 }
 
+.hero-user-name {
+    margin: 8px 0 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
 .hero-panel {
     padding: 20px;
     border-radius: 20px;
@@ -224,6 +230,38 @@ button:disabled {
     color: var(--muted);
     border: 1px dashed var(--line);
     border-radius: 18px;
+}
+
+.login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.login-card {
+    width: min(520px, 100%);
+    margin: 0 auto;
+}
+
+.login-form {
+    display: grid;
+    gap: 10px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: white;
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+
+.login-hint {
+    margin-top: 18px;
+    color: var(--muted);
+    line-height: 1.7;
 }
 
 @media (max-width: 900px) {

@@ -3,11 +3,13 @@ from rest_framework import serializers
 from .models import Book, LibraryUser, Loan
 
 
-# 將 LibraryUser 模型資料轉成 API 可回傳的 JSON 格式。
+# 將目前登入的圖書館使用者資料轉成 API 可回傳的 JSON 格式。
 class LibraryUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="auth_user.username", read_only=True)
+
     class Meta:
         model = LibraryUser
-        fields = ["id", "name", "email"]
+        fields = ["id", "name", "email", "username"]
 
 
 # 將 Book 模型資料轉成 API 可回傳的 JSON 格式。

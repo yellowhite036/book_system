@@ -1,9 +1,17 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
 
-# 儲存可以借書與還書的圖書館使用者資料。
+# 儲存可以登入並借還書的圖書館使用者資料。
 class LibraryUser(models.Model):
+    auth_user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="library_profile",
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
 

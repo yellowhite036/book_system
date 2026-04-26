@@ -6,8 +6,8 @@ from .models import Book, LibraryUser, Loan
 # 註冊使用者模型到 Django 後台，方便管理資料。
 @admin.register(LibraryUser)
 class LibraryUserAdmin(admin.ModelAdmin):
-    list_display = ("name", "email")
-    search_fields = ("name", "email")
+    list_display = ("name", "email", "auth_user")
+    search_fields = ("name", "email", "auth_user__username")
 
 
 # 註冊書籍模型到 Django 後台，方便查看館藏狀況。
@@ -29,7 +29,7 @@ class LoanAdmin(admin.ModelAdmin):
     # 根據還書時間與逾期狀態回傳對應的借閱文字。
     def loan_status(obj):
         if obj.returned_at:
-            return "Returned"
+            return "已歸還"
         if obj.is_overdue:
-            return "Overdue"
-        return "Borrowed"
+            return "已逾期"
+        return "借閱中"

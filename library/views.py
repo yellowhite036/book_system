@@ -1,7 +1,11 @@
 from datetime import timedelta
 
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -12,39 +16,79 @@ from .models import Book, LibraryUser, Loan
 from .serializers import BookSerializer, LibraryUserSerializer, LoanSerializer
 
 
+# 取得目前登入者對應的圖書館使用者資料。
+def get_current_library_user(request):
+    if not request.user.is_authenticated:
+        return None
+    return LibraryUser.objects.filter(auth_user=request.user).first()
+
+
+# 顯示登入頁面，已登入者直接進入首頁。
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    error_message = ""
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("index")
+        error_message = "帳號或密碼錯誤，請重新輸入。"
+
+    return render(request, "library/login.html", {"error_message": error_message})
+
+
+# 登出目前使用者並返回登入頁面。
+@login_required
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("login"))
+
+
 # 顯示系統首頁的單頁式操作介面。
+@login_required
 def index(request):
     return render(request, "library/index.html")
 
 
+# 回傳目前登入的圖書館使用者資料。
 @api_view(["GET"])
-# 回傳所有使用者，讓前端可以選擇目前操作的借閱者。
-def user_list(request):
-    users = LibraryUser.objects.all().order_by("name")
-    return Response(LibraryUserSerializer(users, many=True).data)
+def current_user(request):
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(LibraryUserSerializer(user).data)
 
 
-@api_view(["GET"])
 # 回傳完整書單資料。
+@api_view(["GET"])
 def book_list(request):
+    if not request.user.is_authenticated:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
     books = Book.objects.all().order_by("title")
     return Response(BookSerializer(books, many=True).data)
 
 
+# 回傳目前登入者自己的借閱紀錄。
 @api_view(["GET"])
-# 回傳借閱紀錄，也支援依使用者篩選。
 def loan_list(request):
-    loans = Loan.objects.select_related("user", "book").all()
-    user_id = request.GET.get("user_id")
-    if user_id:
-        loans = loans.filter(user_id=user_id)
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+    loans = Loan.objects.select_related("user", "book").filter(user=user)
     return Response(LoanSerializer(loans, many=True).data)
 
 
-@api_view(["POST"])
 # 建立借閱紀錄，並同步扣除可借數量。
+@api_view(["POST"])
 def borrow_book(request):
-    user = get_object_or_404(LibraryUser, pk=request.data.get("user_id"))
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+
     book = get_object_or_404(Book, pk=request.data.get("book_id"))
 
     # 使用交易機制，確保借閱紀錄與庫存更新同時成功。
@@ -67,10 +111,18 @@ def borrow_book(request):
     )
 
 
-@api_view(["POST"])
 # 將借閱標記為已歸還，並恢復一本可借館藏。
+@api_view(["POST"])
 def return_book(request):
-    loan = get_object_or_404(Loan.objects.select_related("book", "user"), pk=request.data.get("loan_id"))
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    loan = get_object_or_404(
+        Loan.objects.select_related("book", "user"),
+        pk=request.data.get("loan_id"),
+        user=user,
+    )
     if loan.returned_at:
         return Response({"detail": "這筆借閱已經完成歸還。"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -89,13 +141,12 @@ def return_book(request):
     )
 
 
-@api_view(["POST"])
 # 將使用者訊息交給 chatbot 邏輯處理，並回傳回答內容。
+@api_view(["POST"])
 def chatbot(request):
-    user = None
-    user_id = request.data.get("user_id")
-    if user_id:
-        user = LibraryUser.objects.filter(pk=user_id).first()
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
 
     reply = build_chatbot_reply(request.data.get("message"), user=user)
     return Response({"reply": reply})
