@@ -12,27 +12,27 @@ from .models import Book, LibraryUser, Loan
 from .serializers import BookSerializer, LibraryUserSerializer, LoanSerializer
 
 
-# Render the single-page web UI.
+# 顯示系統首頁的單頁式操作介面。
 def index(request):
     return render(request, "library/index.html")
 
 
 @api_view(["GET"])
-# Return all users so the frontend can choose who is borrowing books.
+# 回傳所有使用者，讓前端可以選擇目前操作的借閱者。
 def user_list(request):
     users = LibraryUser.objects.all().order_by("name")
     return Response(LibraryUserSerializer(users, many=True).data)
 
 
 @api_view(["GET"])
-# Return the full book catalog.
+# 回傳完整書單資料。
 def book_list(request):
     books = Book.objects.all().order_by("title")
     return Response(BookSerializer(books, many=True).data)
 
 
 @api_view(["GET"])
-# Return loan records, optionally filtered to one user.
+# 回傳借閱紀錄，也支援依使用者篩選。
 def loan_list(request):
     loans = Loan.objects.select_related("user", "book").all()
     user_id = request.GET.get("user_id")
@@ -42,16 +42,16 @@ def loan_list(request):
 
 
 @api_view(["POST"])
-# Create a loan and decrease the available inventory count.
+# 建立借閱紀錄，並同步扣除可借數量。
 def borrow_book(request):
     user = get_object_or_404(LibraryUser, pk=request.data.get("user_id"))
     book = get_object_or_404(Book, pk=request.data.get("book_id"))
 
-    # Use a transaction so the loan record and inventory update stay consistent.
+    # 使用交易機制，確保借閱紀錄與庫存更新同時成功。
     with transaction.atomic():
         book.refresh_from_db()
         if book.available_copies <= 0:
-            return Response({"detail": "No copies are currently available for this book."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "這本書目前沒有可借數量。"}, status=status.HTTP_400_BAD_REQUEST)
 
         due_date = timezone.localdate() + timedelta(days=14)
         loan = Loan.objects.create(user=user, book=book, due_date=due_date)
@@ -60,7 +60,7 @@ def borrow_book(request):
 
     return Response(
         {
-            "detail": f"{user.name} borrowed '{book.title}'.",
+            "detail": f"{user.name} 已借閱《{book.title}》。",
             "loan": LoanSerializer(loan).data,
         },
         status=status.HTTP_201_CREATED,
@@ -68,13 +68,13 @@ def borrow_book(request):
 
 
 @api_view(["POST"])
-# Mark a loan as returned and restore one available copy.
+# 將借閱標記為已歸還，並恢復一本可借館藏。
 def return_book(request):
     loan = get_object_or_404(Loan.objects.select_related("book", "user"), pk=request.data.get("loan_id"))
     if loan.returned_at:
-        return Response({"detail": "This loan has already been returned."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "這筆借閱已經完成歸還。"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Use a transaction so the loan status and inventory update succeed together.
+    # 使用交易機制，確保還書狀態與庫存更新一致。
     with transaction.atomic():
         loan.returned_at = timezone.now()
         loan.save(update_fields=["returned_at"])
@@ -83,14 +83,14 @@ def return_book(request):
 
     return Response(
         {
-            "detail": f"{loan.user.name} returned '{loan.book.title}'.",
+            "detail": f"{loan.user.name} 已歸還《{loan.book.title}》。",
             "loan": LoanSerializer(loan).data,
         }
     )
 
 
 @api_view(["POST"])
-# Pass the user's message into the chatbot helper and return its answer.
+# 將使用者訊息交給 chatbot 邏輯處理，並回傳回答內容。
 def chatbot(request):
     user = None
     user_id = request.data.get("user_id")

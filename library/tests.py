@@ -6,7 +6,9 @@ from django.utils import timezone
 from .models import Book, LibraryUser, Loan
 
 
+# 測試借閱模型中的逾期判斷是否正確。
 class LoanModelTests(TestCase):
+    # 建立一筆昨天到期的借閱資料，確認系統會判定為逾期。
     def test_overdue_detection(self):
         user = LibraryUser.objects.create(name="Tester", email="tester@example.com")
         book = Book.objects.create(

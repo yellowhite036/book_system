@@ -12,24 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# 專案根目錄位置，後續會用來組合模板、靜態檔與資料庫路徑。
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# Django 專案密鑰，正式上線時不應直接寫在程式中。
 SECRET_KEY = 'django-insecure-)k!ru0ef)5-@^n63_xh@sk_dwijpli+-nh=dy-64(j(5s=j-br'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# 開發模式下開啟除錯資訊，正式環境應改為 False。
 DEBUG = True
 
+# 允許哪些主機名稱存取這個 Django 專案。
 ALLOWED_HOSTS = ["*"]
 
 
-# Application definition
-
+# 註冊專案中啟用的 app，包含 Django 內建模組、DRF 與 library。
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +38,7 @@ INSTALLED_APPS = [
     'library',
 ]
 
+# 請求進入 Django 後，依序經過的中介層設定。
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -51,8 +49,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# 指定主路由設定檔位置。
 ROOT_URLCONF = 'library_system.urls'
 
+# 模板引擎設定，讓 Django 能找到 HTML 模板。
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -68,12 +68,11 @@ TEMPLATES = [
     },
 ]
 
+# WSGI 入口，部署時伺服器會從這裡載入 Django 應用。
 WSGI_APPLICATION = 'library_system.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# 使用 SQLite 作為目前專案的資料庫。
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -82,9 +81,7 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
+# Django 內建的密碼驗證規則。
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -101,25 +98,24 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
+# 系統語系設定為繁體中文。
 LANGUAGE_CODE = 'zh-hant'
 
+# 系統時區設定為台北時區。
 TIME_ZONE = 'Asia/Taipei'
 
+# 啟用 Django 國際化功能。
 USE_I18N = True
 
+# 使用具時區概念的時間格式。
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# 前端靜態資源的 URL 前綴。
 STATIC_URL = 'static/'
+
+# 指定本地靜態檔資料夾位置。
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
+# 新建立資料表時，預設使用 BigAutoField 作為主鍵型別。
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 
+# 定義圖書館模組的頁面與 API 路由。
 urlpatterns = [
     path("", views.index, name="index"),
     path("api/users/", views.user_list, name="user-list"),

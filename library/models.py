@@ -2,17 +2,17 @@ from django.db import models
 from django.utils import timezone
 
 
-# Store the library users who can borrow and return books.
+# 儲存可以借書與還書的圖書館使用者資料。
 class LibraryUser(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
 
-    # Show the user's name in Django admin and debug output.
+    # 在 Django 後台與除錯輸出中顯示使用者名稱。
     def __str__(self):
         return self.name
 
 
-# Store each book in the library catalog and its inventory count.
+# 儲存圖書館書籍資料以及目前館藏數量。
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=100)
@@ -22,12 +22,12 @@ class Book(models.Model):
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
 
-    # Show a readable book label in admin and logs.
+    # 在後台與紀錄中顯示較易讀的書籍名稱格式。
     def __str__(self):
         return f"{self.title} - {self.author}"
 
 
-# Store one borrowing record that connects a user and a book.
+# 儲存每一筆借閱紀錄，連接使用者與書籍。
 class Loan(models.Model):
     user = models.ForeignKey(LibraryUser, on_delete=models.CASCADE, related_name="loans")
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="loans")
@@ -38,16 +38,16 @@ class Loan(models.Model):
     class Meta:
         ordering = ["returned_at", "due_date", "-borrowed_at"]
 
-    # Show a readable borrowing relationship in admin and logs.
+    # 在後台與紀錄中顯示借閱關係。
     def __str__(self):
         return f"{self.user} -> {self.book}"
 
     @property
-    # Mark whether this loan has been returned already.
+    # 判斷這筆借閱是否已完成還書。
     def is_returned(self):
         return self.returned_at is not None
 
     @property
-    # A loan is overdue only when it is still active and the due date has passed.
+    # 只有尚未歸還且超過到期日時，才算逾期。
     def is_overdue(self):
         return not self.is_returned and self.due_date < timezone.localdate()
