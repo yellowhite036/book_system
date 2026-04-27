@@ -13,6 +13,7 @@ const loansContainer = document.querySelector("#loansContainer");
 const chatMessages = document.querySelector("#chatMessages");
 const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
+const chatbotModeTag = document.querySelector("#chatbotModeTag");
 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 
 // 從瀏覽器 cookie 取出 Django 的 CSRF token。
@@ -69,6 +70,13 @@ function renderCurrentUser() {
     return;
   }
   userName.textContent = `${state.currentUser.name}（${state.currentUser.username}）`;
+  renderChatbotMode(state.currentUser.chatbot_mode);
+}
+
+// 顯示目前客服是走本地模式還是 LLM 模式。
+function renderChatbotMode(mode) {
+  if (!chatbotModeTag) return;
+  chatbotModeTag.textContent = mode || "本地模式";
 }
 
 // 顯示所有書籍，並標示目前是否仍可借閱。
@@ -235,6 +243,7 @@ chatForm.addEventListener("submit", async (event) => {
       method: "POST",
       body: JSON.stringify({ message }),
     });
+    renderChatbotMode(data.mode);
     appendMessage("bot", data.reply);
   } catch (error) {
     appendMessage("bot", error.message);

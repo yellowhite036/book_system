@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .chatbot import build_chatbot_reply
+from .chatbot import build_chatbot_reply, get_chatbot_default_mode
 from .models import Book, LibraryUser, Loan
 from .serializers import BookSerializer, LibraryUserSerializer, LoanSerializer
 
@@ -60,7 +60,9 @@ def current_user(request):
     user = get_current_library_user(request)
     if user is None:
         return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
-    return Response(LibraryUserSerializer(user).data)
+    data = LibraryUserSerializer(user).data
+    data["chatbot_mode"] = get_chatbot_default_mode()
+    return Response(data)
 
 
 # 回傳完整書單資料。
@@ -148,5 +150,11 @@ def chatbot(request):
     if user is None:
         return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    reply = build_chatbot_reply(request.data.get("message"), user=user)
-    return Response({"reply": reply})
+    result = build_chatbot_reply(request.data.get("message"), user=user)
+    return Response(
+        {
+            "reply": result["reply"],
+            "mode": result["mode_label"],
+            "mode_code": result["mode_code"],
+        }
+    )
