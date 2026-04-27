@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>線上圖書館管理系統</title>
-    <link rel="stylesheet" href="/static/library/style.css?v=20260426b">
+    <link rel="stylesheet" href="/static/library/style.css?v=20260428b">
 </head>
 <body>
     <main class="page-shell">
@@ -14,13 +14,14 @@
                 <p class="eyebrow">Online Library Console</p>
                 <h1>線上圖書館管理系統</h1>
                 <p class="hero-copy">
-                    使用個人帳號登入後，即可查看自己的借閱狀態、借書、還書，並透過客服 Chatbot 詢問系統規則。
+                    使用者可以送出借書與還書申請；管理員登入後，會在同一個頁面看到待審核清單，並可直接同意或拒絕申請。
                 </p>
             </div>
             <div class="hero-panel">
                 <label>目前登入者</label>
                 <p id="userName" class="hero-user-name">載入中...</p>
                 <p id="userSummary" class="muted-text">正在讀取借閱資訊...</p>
+                <p id="userRole" class="muted-text">角色載入中...</p>
                 <form action="/logout/" method="post">
                     {% csrf_token %}
                     <button type="submit" class="ghost-btn">登出</button>
@@ -46,6 +47,22 @@
             </section>
         </section>
 
+        <section class="card">
+            <div class="section-head">
+                <h2>我的申請</h2>
+                <button id="refreshRequestsBtn" class="ghost-btn">更新申請</button>
+            </div>
+            <div id="requestsContainer" class="loan-list"></div>
+        </section>
+
+        <section id="adminPanel" class="card" hidden>
+            <div class="section-head">
+                <h2>待審核申請</h2>
+                <button id="refreshAdminRequestsBtn" class="ghost-btn">更新待審核</button>
+            </div>
+            <div id="adminRequestsContainer" class="loan-list"></div>
+        </section>
+
         <section class="card chatbot-card">
             <div class="section-head">
                 <h2>客服 Chatbot</h2>
@@ -63,6 +80,6 @@
         </section>
     </main>
 
-    <script src="/static/library/app.js?v=20260426b"></script>
+    <script src="/static/library/app.js?v=20260428b"></script>
 </body>
 </html>

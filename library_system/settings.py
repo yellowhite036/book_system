@@ -117,5 +117,8 @@ STATIC_URL = 'static/'
 # 指定本地靜態檔資料夾位置。
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+# 指定登入保護頁面跳轉的登入網址。
+LOGIN_URL = '/login/'
+
 # 新建立資料表時，預設使用 BigAutoField 作為主鍵型別。
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

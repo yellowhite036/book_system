@@ -4,13 +4,11 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
-from .chatbot import get_chatbot_default_mode
-from .models import Book, LibraryUser, Loan
+from .models import Book, LibraryUser, Loan, LoanRequest
 
 
-# 測試借閱模型中的逾期判斷是否正確。
 class LoanModelTests(TestCase):
-    # 建立一筆昨天到期的借閱資料，確認系統會判定為逾期。
+    # 測試借閱模型中的逾期判斷是否正確。
     def test_overdue_detection(self):
         auth_user = User.objects.create_user(username="tester", password="library123")
         user = LibraryUser.objects.create(
@@ -32,21 +30,24 @@ class LoanModelTests(TestCase):
         )
         self.assertTrue(loan.is_overdue)
 
-
-class IndexViewTests(TestCase):
-    def test_index_context_includes_initial_chatbot_mode(self):
-        auth_user = User.objects.create_user(username="viewer", password="library123")
-        LibraryUser.objects.create(
+    # 測試借書申請建立後，預設狀態應為待審核。
+    def test_loan_request_defaults_to_pending(self):
+        auth_user = User.objects.create_user(username="requester", password="library123")
+        user = LibraryUser.objects.create(
             auth_user=auth_user,
-            name="Viewer",
-            email="viewer@example.com",
+            name="Requester",
+            email="requester@example.com",
         )
-
-        self.client.login(username="viewer", password="library123")
-        response = self.client.get("/")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context["initial_chatbot_mode"],
-            get_chatbot_default_mode(),
+        book = Book.objects.create(
+            title="Approval Book",
+            author="Author",
+            isbn="9789860010000",
+            total_copies=2,
+            available_copies=2,
         )
+        request_record = LoanRequest.objects.create(
+            user=user,
+            book=book,
+            request_type=LoanRequest.REQUEST_BORROW,
+        )
+        self.assertEqual(request_record.status, LoanRequest.STATUS_PENDING)

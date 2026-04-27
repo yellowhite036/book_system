@@ -67,6 +67,20 @@ class Command(BaseCommand):
             )
             created_users.append(library_user)
 
+        admin_user, created = User.objects.get_or_create(
+            username="admin",
+            defaults={
+                "email": "admin@example.com",
+                "is_staff": True,
+                "is_superuser": True,
+            },
+        )
+        admin_user.email = "admin@example.com"
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.set_password("admin123")
+        admin_user.save()
+
         created_books = [Book.objects.update_or_create(isbn=row["isbn"], defaults=row)[0] for row in books]
 
         overdue_loan, created = Loan.objects.get_or_create(
@@ -95,4 +109,4 @@ class Command(BaseCommand):
             active_loan.book.available_copies = max(0, active_loan.book.available_copies - 1)
             active_loan.book.save(update_fields=["available_copies"])
 
-        self.stdout.write(self.style.SUCCESS("Sample library data with login accounts created."))
+        self.stdout.write(self.style.SUCCESS("Sample library data with login accounts created. Admin: admin / admin123"))
