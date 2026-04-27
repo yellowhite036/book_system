@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
+from .chatbot import get_chatbot_default_mode
 from .models import Book, LibraryUser, Loan
 
 
@@ -30,3 +31,22 @@ class LoanModelTests(TestCase):
             due_date=timezone.localdate() - timedelta(days=1),
         )
         self.assertTrue(loan.is_overdue)
+
+
+class IndexViewTests(TestCase):
+    def test_index_context_includes_initial_chatbot_mode(self):
+        auth_user = User.objects.create_user(username="viewer", password="library123")
+        LibraryUser.objects.create(
+            auth_user=auth_user,
+            name="Viewer",
+            email="viewer@example.com",
+        )
+
+        self.client.login(username="viewer", password="library123")
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["initial_chatbot_mode"],
+            get_chatbot_default_mode(),
+        )

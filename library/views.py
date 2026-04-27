@@ -51,7 +51,13 @@ def logout_view(request):
 # 顯示系統首頁的單頁式操作介面。
 @login_required
 def index(request):
-    return render(request, "library/index.html")
+    return render(
+        request,
+        "library/index.html",
+        {
+            "initial_chatbot_mode": get_chatbot_default_mode(),
+        },
+    )
 
 
 # 回傳目前登入的圖書館使用者資料。
