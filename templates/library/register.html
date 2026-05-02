@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊圖書館系統</title>
+    <link rel="stylesheet" href="/static/library/style.css?v=20260426b">
+</head>
+<body>
+    <main class="page-shell login-shell">
+        <section class="card login-card">
+            <p class="eyebrow">Library Register</p>
+            <h1>建立圖書館帳號</h1>
+            <p class="hero-copy">註冊後即可查看館藏、借書、還書，並使用個人化借閱助理。</p>
+
+            {% if error_message %}
+            <div class="message bot">{{ error_message }}</div>
+            {% endif %}
+
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <label for="name">姓名</label>
+                <input id="name" name="name" type="text" placeholder="請輸入姓名" value="{{ form_data.name }}" required>
+
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="請輸入 Email" value="{{ form_data.email }}" required>
+
+                <label for="username">帳號</label>
+                <input id="username" name="username" type="text" placeholder="請輸入帳號" value="{{ form_data.username }}" required>
+
+                <label for="password">密碼</label>
+                <input id="password" name="password" type="password" placeholder="請輸入密碼" required>
+
+                <label for="confirm_password">確認密碼</label>
+                <input id="confirm_password" name="confirm_password" type="password" placeholder="請再次輸入密碼" required>
+
+                <button type="submit">建立帳號</button>
+            </form>
+
+            <div class="login-hint">
+                <p>已經有帳號？ <a href="{% url 'login' %}">回到登入</a></p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

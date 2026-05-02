@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -42,6 +43,59 @@ def login_view(request):
 
 
 # 登出目前使用者並返回登入頁面。
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    error_message = ""
+    form_data = {
+        "name": "",
+        "email": "",
+        "username": "",
+    }
+
+    if request.method == "POST":
+        form_data = {
+            "name": request.POST.get("name", "").strip(),
+            "email": request.POST.get("email", "").strip(),
+            "username": request.POST.get("username", "").strip(),
+        }
+        password = request.POST.get("password", "")
+        confirm_password = request.POST.get("confirm_password", "")
+
+        if not all([form_data["name"], form_data["email"], form_data["username"], password, confirm_password]):
+            error_message = "請完整填寫註冊資料。"
+        elif password != confirm_password:
+            error_message = "兩次輸入的密碼不一致。"
+        elif User.objects.filter(username=form_data["username"]).exists():
+            error_message = "這個帳號已經被使用。"
+        elif LibraryUser.objects.filter(email=form_data["email"]).exists():
+            error_message = "這個 Email 已經註冊過。"
+        else:
+            with transaction.atomic():
+                auth_user = User.objects.create_user(
+                    username=form_data["username"],
+                    email=form_data["email"],
+                    password=password,
+                )
+                LibraryUser.objects.create(
+                    auth_user=auth_user,
+                    name=form_data["name"],
+                    email=form_data["email"],
+                )
+            login(request, auth_user)
+            return redirect("index")
+
+    return render(
+        request,
+        "library/register.html",
+        {
+            "error_message": error_message,
+            "form_data": form_data,
+        },
+    )
+
+
 @login_required
 def logout_view(request):
     logout(request)

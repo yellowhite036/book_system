@@ -50,3 +50,39 @@ class IndexViewTests(TestCase):
             response.context["initial_chatbot_mode"],
             get_chatbot_default_mode(),
         )
+
+
+class RegisterViewTests(TestCase):
+    def test_register_creates_library_user_and_logs_in(self):
+        response = self.client.post(
+            "/register/",
+            {
+                "name": "New Reader",
+                "email": "reader@example.com",
+                "username": "reader",
+                "password": "library123",
+                "confirm_password": "library123",
+            },
+        )
+
+        self.assertRedirects(response, "/")
+        self.assertTrue(User.objects.filter(username="reader").exists())
+        self.assertTrue(LibraryUser.objects.filter(email="reader@example.com").exists())
+
+    def test_register_rejects_duplicate_username(self):
+        User.objects.create_user(username="reader", password="library123")
+
+        response = self.client.post(
+            "/register/",
+            {
+                "name": "New Reader",
+                "email": "reader@example.com",
+                "username": "reader",
+                "password": "library123",
+                "confirm_password": "library123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "這個帳號已經被使用。")
+        self.assertFalse(LibraryUser.objects.filter(email="reader@example.com").exists())

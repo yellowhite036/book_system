@@ -264,6 +264,16 @@ button:disabled {
     line-height: 1.7;
 }
 
+.login-hint a {
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.login-hint a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 900px) {
     .hero-card,
     .dashboard-grid,
