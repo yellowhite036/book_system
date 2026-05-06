@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Book, LibraryUser, Loan
+from .models import Book, LibraryUser, Loan, Question
 
 
 # 將目前登入的圖書館使用者資料轉成 API 可回傳的 JSON 格式。
@@ -49,3 +49,24 @@ class LoanSerializer(serializers.ModelSerializer):
             "is_overdue",
             "is_returned",
         ]
+
+
+# 將使用者提問轉成 JSON 格式。
+class QuestionSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.name", read_only=True)
+    is_answered = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "user_name",
+            "content",
+            "answer",
+            "created_at",
+            "answered_at",
+            "is_answered",
+        ]
+
+    def get_is_answered(self, obj):
+        return obj.answer is not None and obj.answer != ""

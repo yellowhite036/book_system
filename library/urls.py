@@ -16,4 +16,6 @@ urlpatterns = [
     path("api/borrow/", views.borrow_book, name="borrow-book"),
     path("api/return/", views.return_book, name="return-book"),
     path("api/chatbot/", views.chatbot, name="chatbot"),
+    path("api/questions/", views.question_list, name="question-list"),
+    path("api/questions/ask/", views.ask_question, name="ask-question"),
 ]

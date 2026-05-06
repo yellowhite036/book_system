@@ -3,6 +3,7 @@ const state = {
   currentUser: null,
   books: [],
   loans: [],
+  questions: [],
 };
 
 // 先取得頁面上會重複使用的 DOM 元素。
@@ -14,6 +15,13 @@ const chatMessages = document.querySelector("#chatMessages");
 const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
 const chatbotModeTag = document.querySelector("#chatbotModeTag");
+
+const questionsContainer = document.querySelector("#questionsContainer");
+const askForm = document.querySelector("#askForm");
+const askInput = document.querySelector("#askInput");
+const askFeedback = document.querySelector("#askFeedback");
+const refreshQuestionsBtn = document.querySelector("#refreshQuestionsBtn");
+
 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 
 // 從瀏覽器 cookie 取出 Django 的 CSRF token。
@@ -149,6 +157,37 @@ function renderLoans() {
     .join("");
 }
 
+// 顯示提問列表與管理員回覆。
+function renderQuestions() {
+  if (!state.questions.length) {
+    questionsContainer.innerHTML = '<div class="empty-state">目前沒有提問紀錄。</div>';
+    return;
+  }
+
+  questionsContainer.innerHTML = state.questions
+    .map((q) => `
+      <article class="question-item ${q.is_answered ? "answered" : ""}">
+        <div class="question-content">
+          <span class="q-tag">問</span>
+          <p>${q.content}</p>
+          <small>${formatDate(q.created_at)}</small>
+        </div>
+        ${q.answer ? `
+          <div class="answer-content">
+            <span class="a-tag">答</span>
+            <p>${q.answer}</p>
+            <small>${formatDate(q.answered_at)}</small>
+          </div>
+        ` : `
+          <div class="answer-content pending">
+            <p class="muted-text">等待管理員回覆中...</p>
+          </div>
+        `}
+      </article>
+    `)
+    .join("");
+}
+
 // 在對話區塊加入一則訊息。
 function appendMessage(role, text) {
   const div = document.createElement("div");
@@ -176,9 +215,35 @@ async function loadLoans() {
   renderLoans();
 }
 
+// 從後端載入提問紀錄。
+async function loadQuestions() {
+  state.questions = await apiFetch("/api/questions/");
+  renderQuestions();
+}
+
 // 平行更新所有主要資料，讓畫面刷新更快。
 async function refreshAll() {
-  await Promise.all([loadCurrentUser(), loadBooks(), loadLoans()]);
+  await Promise.all([loadCurrentUser(), loadBooks(), loadLoans(), loadQuestions()]);
+}
+
+// 顯示提問區的提示訊息。
+function showAskFeedback(text, isError = false) {
+  askFeedback.textContent = text;
+  askFeedback.className = `feedback-msg ${isError ? "error" : "success"}`;
+  setTimeout(() => {
+    askFeedback.textContent = "";
+    askFeedback.className = "feedback-msg";
+  }, 5000);
+}
+
+// 針對提問呼叫 API。
+async function handleAsk(content) {
+  const data = await apiFetch("/api/questions/ask/", {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+  showAskFeedback(data.detail);
+  await loadQuestions();
 }
 
 // 針對選擇的書籍呼叫借書 API。
@@ -228,6 +293,21 @@ loansContainer.addEventListener("click", async (event) => {
 // 提供手動刷新書單與借閱狀態的按鈕。
 document.querySelector("#refreshBooksBtn").addEventListener("click", loadBooks);
 document.querySelector("#refreshLoansBtn").addEventListener("click", loadLoans);
+document.querySelector("#refreshQuestionsBtn").addEventListener("click", loadQuestions);
+
+// 監聽提問表單提交。
+askForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const content = askInput.value.trim();
+  if (!content) return;
+
+  try {
+    await handleAsk(content);
+    askInput.value = "";
+  } catch (error) {
+    showAskFeedback(error.message, true);
+  }
+});
 
 // 將輸入訊息送到 chatbot，並把回覆顯示在畫面上。
 chatForm.addEventListener("submit", async (event) => {

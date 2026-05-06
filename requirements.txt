@@ -1,2 +1,5 @@
 Django==5.2.1
 djangorestframework==3.16.0
+
+/admin/library/question/
+http://127.0.0.1:8000/

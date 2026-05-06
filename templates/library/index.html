@@ -61,6 +61,22 @@
                 <button type="submit">送出</button>
             </form>
         </section>
+
+        <section class="card">
+            <div class="section-head">
+                <h2>提問與回覆</h2>
+                <button id="refreshQuestionsBtn" class="ghost-btn">更新狀態</button>
+            </div>
+            <div id="questionsContainer" class="question-list">
+                <div class="empty-state">載入中...</div>
+            </div>
+            <div id="askFeedback" class="feedback-msg"></div>
+            <hr class="section-divider">
+            <form id="askForm" class="chat-form">
+                <input id="askInput" type="text" placeholder="向管理員提問..." required>
+                <button type="submit">提交提問</button>
+            </form>
+        </section>
     </main>
 
     <script src="/static/library/app.js?v=20260426b"></script>

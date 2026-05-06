@@ -281,3 +281,101 @@ button:disabled {
         grid-template-columns: 1fr;
     }
 }
+
+/* 提問區塊專屬樣式 */
+.question-list {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.question-item {
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.85);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.question-item.answered {
+    border-color: var(--primary);
+}
+
+.question-content,
+.answer-content {
+    padding: 16px;
+    position: relative;
+    display: grid;
+    gap: 4px;
+}
+
+.question-content {
+    background: rgba(12, 108, 103, 0.03);
+}
+
+.answer-content {
+    border-top: 1px solid var(--line);
+    background: white;
+}
+
+.answer-content.pending {
+    background: rgba(0, 0, 0, 0.02);
+    font-style: italic;
+}
+
+.q-tag, .a-tag {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    opacity: 0.6;
+}
+
+.q-tag {
+    background: var(--primary);
+    color: white;
+}
+
+.a-tag {
+    background: var(--warn);
+    color: white;
+}
+
+.question-item p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.question-item small {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.section-divider {
+    border: 0;
+    height: 1px;
+    background: var(--line);
+    margin: 20px 0;
+}
+
+.feedback-msg {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.feedback-msg.success {
+    background: rgba(12, 108, 103, 0.1);
+    color: var(--primary-dark);
+}
+
+.feedback-msg.error {
+    background: rgba(181, 72, 59, 0.1);
+    color: var(--danger);
+}

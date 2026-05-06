@@ -59,3 +59,20 @@ class Loan(models.Model):
     # 只有尚未歸還且超過到期日時，才算逾期。
     def is_overdue(self):
         return not self.is_returned and self.due_date < timezone.localdate()
+
+
+# 儲存使用者提問與管理員的回覆。
+class Question(models.Model):
+    user = models.ForeignKey(LibraryUser, on_delete=models.CASCADE, related_name="questions")
+    content = models.TextField(verbose_name="問題內容")
+    answer = models.TextField(verbose_name="管理員回覆", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "使用者提問"
+        verbose_name_plural = "使用者提問"
+
+    def __str__(self):
+        return f"{self.user.name}: {self.content[:20]}..."

@@ -13,8 +13,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .chatbot import build_chatbot_reply, get_chatbot_default_mode
-from .models import Book, LibraryUser, Loan
-from .serializers import BookSerializer, LibraryUserSerializer, LoanSerializer
+from .models import Book, LibraryUser, Loan, Question
+from .serializers import BookSerializer, LibraryUserSerializer, LoanSerializer, QuestionSerializer
 
 
 # 取得目前登入者對應的圖書館使用者資料。
@@ -217,4 +217,35 @@ def chatbot(request):
             "mode": result["mode_label"],
             "mode_code": result["mode_code"],
         }
+    )
+
+
+# 回傳目前使用者的問題列表。
+@api_view(["GET"])
+def question_list(request):
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+    questions = Question.objects.filter(user=user)
+    return Response(QuestionSerializer(questions, many=True).data)
+
+
+# 提交新問題。
+@api_view(["POST"])
+def ask_question(request):
+    user = get_current_library_user(request)
+    if user is None:
+        return Response({"detail": "請先登入。"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    content = request.data.get("content", "").strip()
+    if not content:
+        return Response({"detail": "問題內容不能為空。"}, status=status.HTTP_400_BAD_REQUEST)
+
+    question = Question.objects.create(user=user, content=content)
+    return Response(
+        {
+            "detail": "問題已提交，請稍候管理員回覆。",
+            "question": QuestionSerializer(question).data,
+        },
+        status=status.HTTP_201_CREATED,
     )
